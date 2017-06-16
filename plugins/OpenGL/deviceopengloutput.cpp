@@ -17,7 +17,7 @@
 #include "openglplugin.h"
 #include "windownode.h"
 
-//#define OPENGL_DEBUG_ENABLE
+#define OPENGL_DEBUG_ENABLE
 
 QOpenGLDebugLogger			*DeviceOpenGLOutput::mDebugLogger = nullptr;
 
@@ -354,6 +354,7 @@ void DeviceOpenGLOutput::exposeEvent( QExposeEvent * )
 	{
 		makeCurrent();
 
+#if defined( glewExperimental )
 		if( glewExperimental == GL_FALSE )
 		{
 			glewExperimental = GL_TRUE;
@@ -364,6 +365,7 @@ void DeviceOpenGLOutput::exposeEvent( QExposeEvent * )
 
 				return;
 			}
+#endif
 
 			qDebug() << "GL_VENDOR" << QString( (const char *)glGetString( GL_VENDOR ) );
 
@@ -397,8 +399,9 @@ void DeviceOpenGLOutput::exposeEvent( QExposeEvent * )
 			{
 				showFullScreen();
 			}
+#if defined( glewExperimental )
 		}
-
+#endif
 		raise();
 	}
 }

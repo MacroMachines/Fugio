@@ -338,6 +338,8 @@ void TexturePin::update()
 				case GL_TEXTURE_2D:
 				case GL_TEXTURE_RECTANGLE:
 					{
+						qDebug() << QString::number( mTexDsc.mTarget, 16 ) << QString::number( mTexDsc.mInternalFormat, 16 ) << mTexDsc.mTexWidth << mTexDsc.mTexHeight << QString::number( mTexDsc.mFormat, 16 ) << QString::number( mTexDsc.mType, 16 );
+
 						glTexImage2D( mTexDsc.mTarget, 0, mTexDsc.mInternalFormat, mTexDsc.mTexWidth, mTexDsc.mTexHeight, 0, mTexDsc.mFormat, mTexDsc.mType, 0 );
 
 						TextureAllocated = true;
@@ -355,7 +357,7 @@ void TexturePin::update()
 					}
 					break;
 
-#if defined( GLEW_VERSION_1_2 )
+#if defined( GL_TEXTURE_3D )
 				case GL_TEXTURE_3D:
 					{
 						glTexImage3D( mTexDsc.mTarget, 0, mTexDsc.mInternalFormat, mTexDsc.mTexWidth, mTexDsc.mTexHeight, mTexDsc.mTexDepth, 0, mTexDsc.mFormat, mTexDsc.mType, 0 );
@@ -482,7 +484,7 @@ void TexturePin::update( const unsigned char *pData, int pDataSize, int pLineSiz
 				glTexSubImage2D( mTexDsc.mTarget, 0, 0, 0, mTexDsc.mImgWidth, mTexDsc.mImgHeight, mTexDsc.mFormat, mTexDsc.mType, pData );
 				break;
 
-#if !defined( GL_ES_VERSION_2_0 )
+#if 1// !defined( GL_ES_VERSION_2_0 )
 			case GL_TEXTURE_CUBE_MAP:
 				glTexSubImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + pCubeFaceIndex, 0, 0, 0, mTexDsc.mImgWidth, mTexDsc.mImgHeight, mTexDsc.mFormat, mTexDsc.mType, pData );
 				break;

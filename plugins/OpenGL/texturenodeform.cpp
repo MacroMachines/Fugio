@@ -140,12 +140,13 @@ void TextureNodeForm::updateInternalFormat()
 
 	switch( OpenGLPlugin::mMapFormat.value( ui->mComboFormat->currentText() ) )
 	{
-#if !defined( GL_ES_VERSION_2_0 )
 		case GL_RED:
 			INSERT_INTERNAL( GL_R8 );
 			INSERT_INTERNAL( GL_R8_SNORM );
+#if !defined( GL_ES_VERSION_2_0 )
 			INSERT_INTERNAL( GL_R16 );
 			INSERT_INTERNAL( GL_R16_SNORM );
+#endif
 			INSERT_INTERNAL( GL_R16F );
 			INSERT_INTERNAL( GL_R32F );
 			break;
@@ -162,8 +163,10 @@ void TextureNodeForm::updateInternalFormat()
 		case GL_RG:
 			INSERT_INTERNAL( GL_RG8 );
 			INSERT_INTERNAL( GL_RG8_SNORM );
+#if !defined( GL_ES_VERSION_2_0 )
 			INSERT_INTERNAL( GL_RG16 );
 			INSERT_INTERNAL( GL_RG16_SNORM );
+#endif
 			INSERT_INTERNAL( GL_RG16F );
 			INSERT_INTERNAL( GL_RG32F );
 			break;
@@ -176,15 +179,14 @@ void TextureNodeForm::updateInternalFormat()
 			INSERT_INTERNAL( GL_RG32I );
 			INSERT_INTERNAL( GL_RG32UI );
 			break;
-#endif
 
 		case GL_RGB:
 #if !defined( GL_ES_VERSION_2_0 )
 			INSERT_TYPE( GL_UNSIGNED_BYTE_3_3_2 );
 			INSERT_TYPE( GL_UNSIGNED_BYTE_2_3_3_REV );
 			INSERT_TYPE( GL_UNSIGNED_SHORT_5_6_5_REV );
-			INSERT_TYPE( GL_UNSIGNED_INT_10F_11F_11F_REV );
 #endif
+			INSERT_TYPE( GL_UNSIGNED_INT_10F_11F_11F_REV );
 			INSERT_TYPE( GL_UNSIGNED_SHORT_5_6_5 );
 
 #if !defined( GL_ES_VERSION_2_0 )
@@ -192,26 +194,25 @@ void TextureNodeForm::updateInternalFormat()
 			INSERT_INTERNAL( GL_R3_G3_B2 );
 			INSERT_INTERNAL( GL_RGB4 );
 			INSERT_INTERNAL( GL_RGB5 );
-			INSERT_INTERNAL( GL_RGB8 );
-			INSERT_INTERNAL( GL_RGB8_SNORM );
 			INSERT_INTERNAL( GL_RGB10 );
 			INSERT_INTERNAL( GL_RGB12 );
 			INSERT_INTERNAL( GL_RGB16_SNORM );
 			INSERT_INTERNAL( GL_RGBA2 );
 #endif
+			INSERT_INTERNAL( GL_RGB8 );
+			INSERT_INTERNAL( GL_RGB8_SNORM );
 			INSERT_INTERNAL( GL_RGBA4 );
-#if !defined( GL_ES_VERSION_2_0 )
 			INSERT_INTERNAL( GL_SRGB8 );
 			INSERT_INTERNAL( GL_RGB16F );
 			INSERT_INTERNAL( GL_RGB32F );
 			INSERT_INTERNAL( GL_R11F_G11F_B10F );
 			INSERT_INTERNAL( GL_RGB9_E5 );
-#endif
 			break;
 
-#if !defined( GL_ES_VERSION_2_0 )
 		case GL_RGB_INTEGER:
+#if defined( GL_BGR_INTEGER )
 		case GL_BGR_INTEGER:
+#endif
 			INSERT_INTERNAL( GL_RGB8I );
 			INSERT_INTERNAL( GL_RGB8UI );
 			INSERT_INTERNAL( GL_RGB16I );
@@ -219,7 +220,6 @@ void TextureNodeForm::updateInternalFormat()
 			INSERT_INTERNAL( GL_RGB32I );
 			INSERT_INTERNAL( GL_RGB32UI );
 			break;
-#endif
 
 		case GL_RGBA:
 #if !defined( GL_ES_VERSION_2_0 )
@@ -229,6 +229,10 @@ void TextureNodeForm::updateInternalFormat()
 			INSERT_TYPE( GL_UNSIGNED_INT_8_8_8_8 );
 			INSERT_TYPE( GL_UNSIGNED_INT_8_8_8_8_REV );
 			INSERT_TYPE( GL_UNSIGNED_INT_10_10_10_2 );
+			INSERT_INTERNAL( GL_RGBA12 );
+			INSERT_INTERNAL( GL_RGBA16 );
+#endif
+
 			INSERT_TYPE( GL_UNSIGNED_INT_2_10_10_10_REV );
 			INSERT_TYPE( GL_UNSIGNED_INT_5_9_9_9_REV );
 
@@ -236,21 +240,20 @@ void TextureNodeForm::updateInternalFormat()
 			INSERT_INTERNAL( GL_RGBA8_SNORM );
 			INSERT_INTERNAL( GL_RGB10_A2 );
 			INSERT_INTERNAL( GL_RGB10_A2UI );
-			INSERT_INTERNAL( GL_RGBA12 );
-			INSERT_INTERNAL( GL_RGBA16 );
 			INSERT_INTERNAL( GL_SRGB8_ALPHA8 );
 			INSERT_INTERNAL( GL_RGBA16F );
 			INSERT_INTERNAL( GL_RGBA32F );
-#endif
+
 			INSERT_TYPE( GL_UNSIGNED_SHORT_4_4_4_4 );
 			INSERT_TYPE( GL_UNSIGNED_SHORT_5_5_5_1 );
 
 			INSERT_INTERNAL( GL_RGB5_A1 );
 			break;
 
-#if !defined( GL_ES_VERSION_2_0 )
 		case GL_RGBA_INTEGER:
+#if !defined( GL_ES_VERSION_2_0 )
 		case GL_BGRA_INTEGER:
+#endif
 			INSERT_INTERNAL( GL_RGBA8I );
 			INSERT_INTERNAL( GL_RGBA8UI );
 			INSERT_INTERNAL( GL_RGBA16I );
@@ -258,15 +261,14 @@ void TextureNodeForm::updateInternalFormat()
 			INSERT_INTERNAL( GL_RGBA32I );
 			INSERT_INTERNAL( GL_RGBA32UI );
 			break;
-#endif
 
 		case GL_DEPTH_COMPONENT:
 			INSERT_INTERNAL( GL_DEPTH_COMPONENT16 );
-#if !defined( GL_ES_VERSION_2_0 )
 			INSERT_INTERNAL( GL_DEPTH_COMPONENT24 );
+#if !defined( GL_ES_VERSION_2_0 )
 			INSERT_INTERNAL( GL_DEPTH_COMPONENT32 );
-			INSERT_INTERNAL( GL_DEPTH_COMPONENT32F );
 #endif
+			INSERT_INTERNAL( GL_DEPTH_COMPONENT32F );
 			break;
 
 		case GL_STENCIL_INDEX:
@@ -278,12 +280,10 @@ void TextureNodeForm::updateInternalFormat()
 			INSERT_INTERNAL( GL_STENCIL_INDEX8 );
 			break;
 
-#if !defined( GL_ES_VERSION_2_0 )
 		case GL_DEPTH_STENCIL:
 			INSERT_INTERNAL( GL_DEPTH24_STENCIL8 );
 			INSERT_INTERNAL( GL_DEPTH32F_STENCIL8 );
 			break;
-#endif
 	}
 
 	if( OpenGLPlugin::mMapFormat.value( ui->mComboFormat->currentText() ) == GL_DEPTH_COMPONENT )

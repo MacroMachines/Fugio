@@ -12,7 +12,7 @@
 
 TextureMonitorNode::TextureMonitorNode( QSharedPointer<fugio::NodeInterface> pNode )
 	: NodeControlBase( pNode ), mDockWidget( nullptr ), mWidget( nullptr ), mDockArea( Qt::BottomDockWidgetArea ),
-	  mVAO( 0 ), mProgram( 0 ), mVBO( 0 )
+	  mVBO( QOpenGLBuffer::VertexBuffer )
 {
 	FUGID( PIN_INPUT_TEXTURE, "9e154e12-bcd8-4ead-95b1-5a59833bcf4e" );
 
@@ -100,48 +100,52 @@ void TextureMonitorNode::paintGL()
 		return;
 	}
 
+	glViewport( 0, 0, mWidget->width(), mWidget->height() );
+
 	glClearColor( 0, 0, 0, 0 );
 
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
 
 	OPENGL_PLUGIN_DEBUG;
 
-	if( !mVAO )
+//	if( !mVAO.isCreated() )
+//	{
+//		mVAO.create();
+//	}
+
+//	if( mVAO.isCreated() )
+//	{
+//		mVAO.bind();
+//	}
+
+//	OPENGL_PLUGIN_DEBUG;
+
+//	if( !mVBO.isCreated() )
+//	{
+//		float Vertices[] = {
+//			-1, -1,
+//			-1, 1,
+//			1, -1,
+//			1, 1
+//		};
+
+//		if( mVBO.create() )
+//		{
+//			mVBO.setUsagePattern( QOpenGLBuffer::StaticDraw );
+
+//			mVBO.bind();
+
+//			mVBO.allocate( Vertices, sizeof( Vertices ) );
+//		}
+//	}
+
+//	OPENGL_PLUGIN_DEBUG;
+
+	if( !mProgram.isLinked() )
 	{
-		glGenVertexArrays( 1, &mVAO );
-	}
-
-	if( mVAO )
-	{
-		glBindVertexArray( mVAO );
-	}
-
-	OPENGL_PLUGIN_DEBUG;
-
-	if( !mVBO )
-	{
-		float Vertices[] = {
-			-1, -1,
-			-1, 1,
-			1, -1,
-			1, 1
-		};
-
-		glGenBuffers( 1, &mVBO );
-
-		glBindBuffer( GL_ARRAY_BUFFER, mVBO );
-
-		glBufferData( GL_ARRAY_BUFFER, sizeof( Vertices ), Vertices, GL_STATIC_DRAW );
-	}
-
-	OPENGL_PLUGIN_DEBUG;
-
-	if( !mProgram )
-	{
-		const char *vertexSource =
-				"#version 330\n"
-				"in vec2 position;\n"
-				"out vec2 tpos;\n"
+		const QString vertexSource =
+				"attribute highp vec2 position;\n"
+				"varying mediump vec2 tpos;\n"
 				"void main()\n"
 				"{\n"
 				"	gl_Position = vec4( position, 0.0, 1.0 );\n"
@@ -149,125 +153,97 @@ void TextureMonitorNode::paintGL()
 				"	tpos.y = 1.0 - tpos.y;\n"
 				"}\n";
 
-		GLuint vertexShader = glCreateShader( GL_VERTEX_SHADER );
-
-		glShaderSource( vertexShader, 1, &vertexSource, NULL );
-
-		glCompileShader( vertexShader );
-
-		GLint status;
-
-		glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
-
-		if( !status )
+		if( !mProgram.addShaderFromSourceCode( QOpenGLShader::Vertex, vertexSource ) )
 		{
 			mNode->setStatus( fugio::NodeInterface::Error );
 
 			return;
 		}
 
-		const char *fragmentSource =
-				"#version 330\n"
-				"uniform sampler2D tex;"
-				"in vec2 tpos;\n"
-				"out vec4 outColor;\n"
+		const QString fragmentSource =
+				"uniform sampler2D tex;\n"
+				"varying mediump vec2 tpos;\n"
 				"void main()\n"
 				"{\n"
-				"	outColor = vec4( texture( tex, tpos ).rgb, 1.0 );\n"
+				"	gl_FragColor = vec4( texture2D( tex, tpos ).rgb, 1.0 );\n"
 				"}\n";
 
-		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-		glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
-
-		glCompileShader(fragmentShader);
-
-		glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &status);
-
-		if( !status )
+		if( !mProgram.addShaderFromSourceCode( QOpenGLShader::Fragment, fragmentSource ) )
 		{
 			mNode->setStatus( fugio::NodeInterface::Error );
 
 			return;
 		}
 
-		mProgram = glCreateProgram();
-
-		glAttachShader( mProgram, vertexShader);
-		glAttachShader( mProgram, fragmentShader);
-
-		glLinkProgram( mProgram );
-
-		glGetShaderiv( mProgram, GL_LINK_STATUS, &status );
-
-		if( !status )
+		if( !mProgram.link() )
 		{
 			mNode->setStatus( fugio::NodeInterface::Error );
 
 			return;
 		}
 
-		glUseProgram( mProgram );
-
-		GLint posAttrib = glGetAttribLocation( mProgram, "position" );
-
-		glVertexAttribPointer( posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0 );
-
-		glEnableVertexAttribArray( posAttrib );
 	}
 
 	OPENGL_PLUGIN_DEBUG;
 
-	if( mProgram )
-	{
-		glUseProgram( mProgram );
-	}
-
-	OPENGL_PLUGIN_DEBUG;
-
-	QList<fugio::OpenGLTextureInterface *>	TexLst;
-
-	for( QSharedPointer<fugio::PinInterface> P : mNode->enumInputPins() )
-	{
-		fugio::OpenGLTextureInterface	*T = input<fugio::OpenGLTextureInterface *>( P );
-
-		if( T )
-		{
-			TexLst << T;
-		}
-	}
-
-	if( TexLst.isEmpty() )
+	if( !mProgram.isLinked() )
 	{
 		return;
 	}
 
-	double	tw = 1.0 / double( TexLst.size() );
-
-	for( int i = 0 ; i < TexLst.size() ; i++ )
+	if( mProgram.bind() )
 	{
-		fugio::OpenGLTextureInterface *T = TexLst[ i ];
+		static GLfloat const Vertices[] = {
+			-1, -1,
+			-1, 1,
+			1, -1,
+			1, 1
+		};
 
-		glViewport( tw * i * mWidget->width() * mWidget->devicePixelRatio(), 0, tw * mWidget->width() * mWidget->devicePixelRatio(), mWidget->height() * mWidget->devicePixelRatio() );
+		GLint posAttrib = mProgram.attributeLocation( "position" );
 
-		T->srcBind();
+		mProgram.enableAttributeArray( posAttrib );
 
-		glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
+		mProgram.setAttributeArray( posAttrib, Vertices, 2 );
 
-		T->release();
+		OPENGL_PLUGIN_DEBUG;
+
+		QList<fugio::OpenGLTextureInterface *>	TexLst;
+
+		for( QSharedPointer<fugio::PinInterface> P : mNode->enumInputPins() )
+		{
+			fugio::OpenGLTextureInterface	*T = input<fugio::OpenGLTextureInterface *>( P );
+
+			if( T )
+			{
+				TexLst << T;
+			}
+		}
+
+		if( TexLst.isEmpty() )
+		{
+			return;
+		}
+
+		double	tw = 1.0 / double( TexLst.size() );
+
+		for( int i = 0 ; i < TexLst.size() ; i++ )
+		{
+			fugio::OpenGLTextureInterface *T = TexLst[ i ];
+
+			glViewport( tw * i * mWidget->width() * mWidget->devicePixelRatio(), 0, tw * mWidget->width() * mWidget->devicePixelRatio(), mWidget->height() * mWidget->devicePixelRatio() );
+
+			T->srcBind();
+
+			glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
+
+			T->release();
+		}
+
+		OPENGL_PLUGIN_DEBUG;
+
+		mProgram.disableAttributeArray( posAttrib );
+
+		mProgram.release();
 	}
-
-	OPENGL_PLUGIN_DEBUG;
-
-	if( mProgram )
-	{
-		glUseProgram( 0 );
-	}
-
-	if( mVAO )
-	{
-		glBindVertexArray( 0 );
-	}
-
-	OPENGL_PLUGIN_DEBUG;
 }

@@ -13,7 +13,7 @@
 #include <fugio/plugin_interface.h>
 #include <fugio/device_factory_interface.h>
 
-//#define OPENGL_DEBUG_ENABLE
+#define OPENGL_DEBUG_ENABLE
 
 #if defined( OPENGL_DEBUG_ENABLE )
 #define OPENGL_PLUGIN_DEBUG 	OpenGLPlugin::instance()->checkErrors( __FILE__, __LINE__ );

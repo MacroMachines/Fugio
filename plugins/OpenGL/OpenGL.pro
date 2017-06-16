@@ -6,11 +6,7 @@
 
 include( ../../FugioGlobal.pri )
 
-QT += widgets concurrent
-
-contains( DEFINES, Q_OS_RASPBERRY_PI ) {
-	QT -= opengl
-}
+QT += widgets concurrent opengl
 
 TARGET = $$qtLibraryTarget(fugio-opengl)
 TEMPLATE = lib
@@ -134,8 +130,8 @@ TRANSLATIONS = \
 	translations/fugio_opengl_fr.ts
 
 contains( DEFINES, Q_OS_RASPBERRY_PI ) {
-	SOURCES += deviceopengloutputrpi.cpp
-	HEADERS += deviceopengloutputrpi.h
+	SOURCES += deviceopengloutput.cpp
+	HEADERS += deviceopengloutput.h
 } else {
 	SOURCES += deviceopengloutput.cpp
 	HEADERS += deviceopengloutput.h

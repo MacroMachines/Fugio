@@ -152,6 +152,7 @@ int main( int argc, char *argv[] )
 
 	//-------------------------------------------------------------------------
 
+#if !defined( Q_OS_RASPBERRY_PI )
 	QSurfaceFormat	SurfaceFormat;
 
 	SurfaceFormat.setDepthBufferSize( 24 );
@@ -160,6 +161,17 @@ int main( int argc, char *argv[] )
 	SurfaceFormat.setVersion( 4, 5 );
 
 	QSurfaceFormat::setDefaultFormat( SurfaceFormat );
+#else
+	QSurfaceFormat	SurfaceFormat;
+
+	SurfaceFormat.setDepthBufferSize( 24 );
+	SurfaceFormat.setRedBufferSize( 8 );
+	SurfaceFormat.setGreenBufferSize( 8 );
+	SurfaceFormat.setBlueBufferSize( 8 );
+	SurfaceFormat.setAlphaBufferSize( 8 );
+
+	QSurfaceFormat::setDefaultFormat( SurfaceFormat );
+#endif
 
 	//-------------------------------------------------------------------------
 

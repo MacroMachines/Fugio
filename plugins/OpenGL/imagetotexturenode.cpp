@@ -22,7 +22,7 @@
 
 #include "texturenodeform.h"
 
-#if defined( Q_OS_RASPBERRY_PI )
+#if 0//defined( Q_OS_RASPBERRY_PI )
 #include "deviceopengloutputrpi.h"
 #else
 #include "deviceopengloutput.h"
@@ -250,61 +250,78 @@ void ImageToTextureNode::inputsUpdated( qint64 pTimeStamp )
 
 		switch( I->format() )
 		{
-#if !defined( GL_ES_VERSION_2_0 )
 			case fugio::ImageInterface::FORMAT_BGR8:
+#if defined( GL_BGR )
 				mTexture->setFormat( GL_BGR );
+#else
+				mTexture->setFormat( GL_RGB );
+#endif
 
+#if defined( Q_OS_RASPBERRY_PI )
+				mTexture->setInternalFormat( GL_RGB );
+#else
 				mTexture->setInternalFormat( GL_RGB8 );
+#endif
 				break;
 
 			case fugio::ImageInterface::FORMAT_RGB8:
 				mTexture->setFormat( GL_RGB );
 
+#if defined( Q_OS_RASPBERRY_PI )
+				mTexture->setInternalFormat( GL_RGB );
+#else
 				mTexture->setInternalFormat( GL_RGB8 );
+#endif
 				break;
 
 			case fugio::ImageInterface::FORMAT_RGBA8:
 				mTexture->setFormat( GL_RGBA );
 
+#if defined( Q_OS_RASPBERRY_PI )
+				mTexture->setInternalFormat( GL_RGBA );
+#else
 				mTexture->setInternalFormat( GL_RGBA8 );
+#endif
 				break;
 
 			case fugio::ImageInterface::FORMAT_BGRA8:
+#if defined( GL_BGRA )
 				mTexture->setFormat( GL_BGRA );
+#else
+				mTexture->setFormat( GL_RGBA );
+#endif
 
+#if defined( Q_OS_RASPBERRY_PI )
+				mTexture->setInternalFormat( GL_RGBA );
+#else
 				mTexture->setInternalFormat( GL_RGBA8 );
+#endif
 				break;
 
 			case fugio::ImageInterface::FORMAT_GRAY16:
 				mTexture->setType( GL_UNSIGNED_SHORT );
 
-				if( GLEW_VERSION_3_0 )
-				{
-					mTexture->setFormat( GL_RED_INTEGER );
+#if defined( GL_RED_INTEGER ) && defined( GL_R16UI )
+				mTexture->setFormat( GL_RED_INTEGER );
 
-					mTexture->setInternalFormat( GL_R16UI );
-				}
-				else
-				{
-					mTexture->setFormat( GL_LUMINANCE );
+				mTexture->setInternalFormat( GL_R16UI );
+#else
+				mTexture->setFormat( GL_LUMINANCE );
 
-					mTexture->setInternalFormat( GL_LUMINANCE16 );
-				}
+				mTexture->setInternalFormat( GL_LUMINANCE16 );
+#endif
 				break;
 
 			case fugio::ImageInterface::FORMAT_GRAY8:
-				if( GLEW_VERSION_3_0 )
-				{
-					mTexture->setFormat( GL_RED_INTEGER );
+#if defined( GL_RED_INTEGER ) && defined( GL_R8UI )
+				mTexture->setFormat( GL_RED_INTEGER );
 
-					mTexture->setInternalFormat( GL_R8UI );
-				}
-				else
-				{
-					mTexture->setFormat( GL_LUMINANCE );
+				mTexture->setInternalFormat( GL_R8UI );
+#else
+				mTexture->setFormat( GL_LUMINANCE );
 
-					mTexture->setInternalFormat( GL_LUMINANCE8 );
-				}
+				mTexture->setInternalFormat( GL_LUMINANCE8 );
+#endif
 				break;
 
 			case fugio::ImageInterface::FORMAT_YUYV422:
@@ -350,8 +367,8 @@ void ImageToTextureNode::inputsUpdated( qint64 pTimeStamp )
 
 				mTexture->setInternalFormat( GL_COMPRESSED_RGBA_S3TC_DXT5_EXT );
 				break;
-#endif
-			default:
+
+		default:
 				return;
 		}
 

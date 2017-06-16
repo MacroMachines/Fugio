@@ -15,7 +15,9 @@ MediaAudioProcessor::MediaAudioProcessor( void )
 	mAudioCodec = 0;
 	mFrameSrc = 0;
 	mPacketSize = 0;
+#if !defined( TL_USE_LIB_AV )
 	mSwrContext = 0;
+#endif
 	mErrorState = false;
 	mDuration = 0;
 	mAudioPTS = -1;

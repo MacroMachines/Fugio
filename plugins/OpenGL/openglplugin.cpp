@@ -205,6 +205,12 @@ void OpenGLPlugin::deinitialise()
 }
 
 #if defined( OPENGL_DEBUG_ENABLE )
+//#include <GLES3/gl31.h>
+//#include <GLES3/gl3.h>
+////#include <GLES2/gl2.h>
+#include <EGL/egl.h>
+//#include <EGL/eglext.h>
+
 void OpenGLPlugin::checkErrors( void )
 {
 	if( !hasContext() )
@@ -307,11 +313,12 @@ QString OpenGLPlugin::framebufferError( GLenum pErrorCode )
 		case GL_FRAMEBUFFER_UNSUPPORTED:	return( "GL_FRAMEBUFFER_UNSUPPORTED" );
 		case GL_FRAMEBUFFER_COMPLETE:	return( "GL_FRAMEBUFFER_COMPLETE" );
 
-#if !defined( GL_ES_VERSION_2_0 )
 		case GL_FRAMEBUFFER_UNDEFINED:	return( "GL_FRAMEBUFFER_UNDEFINED" );
+		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:	return( "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE" );
+
+#if !defined( GL_ES_VERSION_2_0 )
 		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:	return( "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER" );
 		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:	return( "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER" );
-		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:	return( "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE" );
 		case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:	return( "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS" );
 #endif
 	}
@@ -327,7 +334,8 @@ void OpenGLPlugin::deviceConfigGui( QWidget *pParent )
 bool OpenGLPlugin::hasContextStatic()
 {
 #if defined( GL_ES_VERSION_2_0 )
-	return( eglGetCurrentContext() != 0 );
+	return( QOpenGLContext::currentContext() );
+//	return( eglGetCurrentContext() != 0 );
 #else
 	return( QOpenGLContext::currentContext() && glewExperimental == GL_TRUE );
 #endif
@@ -374,9 +382,9 @@ void OpenGLPlugin::initStaticData( void )
 		INSERT_TARGET( GL_TEXTURE_2D );
 #if !defined( GL_ES_VERSION_2_0 )
 		INSERT_TARGET( GL_TEXTURE_1D );
-		INSERT_TARGET( GL_TEXTURE_3D );
 		INSERT_TARGET( GL_TEXTURE_RECTANGLE );
 #endif
+		INSERT_TARGET( GL_TEXTURE_3D );
 		INSERT_TARGET( GL_TEXTURE_CUBE_MAP );
 	}
 
@@ -390,18 +398,22 @@ void OpenGLPlugin::initStaticData( void )
 
 		INSERT_FORMAT( GL_STENCIL_INDEX );
 
-#if !defined( GL_ES_VERSION_2_0 )
 		INSERT_FORMAT( GL_RED );
 		INSERT_FORMAT( GL_RG );
-		INSERT_FORMAT( GL_BGR );
-		INSERT_FORMAT( GL_BGRA );
+
 		INSERT_FORMAT( GL_RED_INTEGER );
 		INSERT_FORMAT( GL_RG_INTEGER );
 		INSERT_FORMAT( GL_RGB_INTEGER );
-		INSERT_FORMAT( GL_BGR_INTEGER );
+
 		INSERT_FORMAT( GL_RGBA_INTEGER );
-		INSERT_FORMAT( GL_BGRA_INTEGER );
+
 		INSERT_FORMAT( GL_DEPTH_STENCIL );
+
+#if !defined( GL_ES_VERSION_2_0 )
+		INSERT_FORMAT( GL_BGR );
+		INSERT_FORMAT( GL_BGRA );
+		INSERT_FORMAT( GL_BGR_INTEGER );
+		INSERT_FORMAT( GL_BGRA_INTEGER );
 #endif
 	}
 
